@@ -1,0 +1,10 @@
+{
+  "enabledPlugins": {
+    "superpowers@superpowers-dev": true
+  },
+  "permissions": {
+    "allow": [
+      "WebSearch"
+    ]
+  }
+}
