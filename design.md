@@ -4,7 +4,7 @@
 
 **项目名称**：ExMind  
 **项目类型**：桌面端应用（Tauri + React）  
-**核心定位**：新一代个人知识库沉淀应用，区分用户整理知识与 AI 整理知识，支持人机协作学习
+**核心定位**：新一代个人知识库沉淀应用，区分用户整理知识与 AI 整理知识，支持人机协作学习，让自己的知识沉淀为 wiki 的同时确保知识流过自己的大脑
 
 **核心功能**：
 - 工作区：原始文件资料存储（文件系统）
@@ -22,7 +22,7 @@
 | 桌面框架 | Tauri 2.x | 轻量、跨平台、直接访问文件系统 |
 | 前端框架 | React 18+ | 生态成熟，组件丰富 |
 | 状态管理 | Zustand | 轻量、简单、适合桌面应用 |
-| 样式方案 | Tailwind CSS | 开发效率高 |
+| 组件库 | NaiveUI | 开发效率高 |
 | AI 接入 | OpenAI API / Anthropic API | 用户提供 API Key |
 | 存储 | 文件系统（Markdown） | 文件即知识库 |
 
@@ -225,7 +225,7 @@ knowledge.importToWiki(source: string, targetWiki: 'my' | 'agent', targetPath: s
 ### 7.3 Agent Wiki → 我的Wiki
 
 ```
-1. 用户浏览 Agent Wiki
+1. Agent Wiki 中，未与用户 wiki 同步的部分有标注，用户可以浏览审计
 2. 发现有价值的内容
 3. 点击「同步到我的Wiki」
 4. 复制到目标位置
