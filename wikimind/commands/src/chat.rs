@@ -152,7 +152,11 @@ fn build_system_prompt(workspace_path: Option<String>) -> String {
         - Edit(path, old_string, new_string, replace_all?): Edit specific text in a file\n\
         - ListDir(path): List files in a directory\n\
         - Glob(pattern, path?): Search for files matching a pattern\n\
-        - Grep(pattern, path?, -i?): Search for text in files\n"
+        - Grep(pattern, path?, -i?): Search for text in files\n\
+    \n\
+        Wiki Update Command:\n\
+        - /update: Compare my-notes/ and wiki/ directories, find changed files,\n\
+          show diff (before/after at line level), and sync changes to wiki notes\n"
     );
 
     if let Some(path) = &workspace_path {
