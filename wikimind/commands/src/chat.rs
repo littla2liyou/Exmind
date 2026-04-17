@@ -1,7 +1,10 @@
 //! Chat command with tool execution for file operations
 
+use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use tracing::{info, error};
+use tauri::{AppHandle, Emitter};
+use tracing::{info, error, debug};
+use wikimind_api::providers::anthropic::SseEvent;
 
 // Use file_ops from wikimind_runtime
 use wikimind_runtime::tools::file_ops;
@@ -244,9 +247,10 @@ fn get_tools() -> serde_json::Value {
     ])
 }
 
-/// Chat with tool support - main entry point
+/// Chat with tool support - main entry point (SSE streaming)
 #[tauri::command]
 pub async fn chat(
+    app: AppHandle,
     messages: Vec<ChatMessage>,
     workspace_path: Option<String>,
 ) -> Result<ChatResponse, String> {
@@ -270,10 +274,10 @@ pub async fn chat(
         }));
     }
 
-    let mut client = wikimind_api::providers::anthropic::AnthropicClient::new();
+    let client = wikimind_api::providers::anthropic::AnthropicClient::new();
     let tools = get_tools();
     let mut tools_used = Vec::new();
-    let mut max_iterations = 10;
+    let mut max_iterations = 128;
     let mut final_text = String::new();
 
     loop {
@@ -286,94 +290,165 @@ pub async fn chat(
             "model": client.model,
             "max_tokens": 4096,
             "messages": all_messages,
-            "stream": false,
+            "stream": true,
             "tools": tools
         });
 
-        let (status, body_text) = client.send_request(&body).await?;
+        let mut stream = client.send_streaming_request(&body).await?;
 
-        if !status.is_success() {
-            error!(status = %status, body = %body_text, "API 返回错误");
-            return Err(format!("API error {}: {}", status, body_text));
-        }
+        // Accumulate state from SSE stream
+        let mut text_parts: Vec<String> = Vec::new();
+        let mut assistant_blocks: Vec<serde_json::Value> = Vec::new();
+        let mut current_tool_input = String::new();
+        let mut current_tool_id: Option<String> = None;
+        let mut current_tool_name: Option<String> = None;
+        let mut in_tool_use = false;
+        let mut stop_reason: Option<String> = None;
 
-        let resp_json: serde_json::Value = serde_json::from_str(&body_text)
-            .map_err(|e| format!("Failed to parse response: {}", e))?;
-
-        // Extract text content
-        if let Some(content) = resp_json.get("content").and_then(|c| c.as_array()) {
-            for item in content {
-                if item.get("type").and_then(|t| t.as_str()) == Some("text") {
-                    if let Some(text) = item.get("text").and_then(|t| t.as_str()) {
-                        final_text.push_str(text);
+        while let Some(event) = stream.next().await {
+            match event {
+                SseEvent::ContentBlockDelta { index: _, delta_type, delta } => {
+                    if delta_type == "text" || delta_type == "text_delta" {
+                        // Emit token to frontend immediately
+                        let _ = app.emit("chat-token", serde_json::json!({ "token": delta }));
+                        text_parts.push(delta);
+                    } else if delta_type == "input_json_delta" {
+                        // This is input_json_delta for tool_use
+                        if in_tool_use {
+                            current_tool_input.push_str(&delta);
+                        }
                     }
                 }
+                SseEvent::ContentBlockStart { index: _, block_type, id, name } => {
+                    if block_type == "tool_use" {
+                        in_tool_use = true;
+                        current_tool_input.clear();
+                        current_tool_id = id;
+                        current_tool_name = name;
+                    }
+                }
+                SseEvent::ContentBlockStop { index: _ } => {
+                    if in_tool_use {
+                        in_tool_use = false;
+                        // Flush accumulated text before tool_use
+                        if !text_parts.is_empty() {
+                            let combined = text_parts.join("");
+                            final_text.push_str(&combined);
+                            assistant_blocks.push(serde_json::json!({
+                                "type": "text",
+                                "text": combined
+                            }));
+                            text_parts.clear();
+                        }
+                        // Parse accumulated tool info
+                        if let Ok(input_json) = serde_json::from_str::<serde_json::Value>(&current_tool_input) {
+                            // Prefer saved id/name, fall back to input_json
+                            let tool_id = current_tool_id.take()
+                                .or_else(|| input_json.get("id").and_then(|v| v.as_str()).map(String::from))
+                                .unwrap_or_default();
+                            let tool_name = current_tool_name.take()
+                                .or_else(|| input_json.get("name").and_then(|v| v.as_str()).map(String::from))
+                                .unwrap_or_default();
+                            // Extract input from input_json, excluding id and name
+                            let input = input_json.get("input")
+                                .cloned()
+                                .unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
+                            assistant_blocks.push(serde_json::json!({
+                                "type": "tool_use",
+                                "id": tool_id,
+                                "name": tool_name,
+                                "input": input
+                            }));
+                        }
+                    }
+                }
+                SseEvent::MessageDelta { stop_reason: sr } => {
+                    stop_reason = sr;
+                }
+                SseEvent::MessageStop => {
+                    // Flush any remaining text
+                    if !text_parts.is_empty() {
+                        let combined = text_parts.join("");
+                        final_text.push_str(&combined);
+                        assistant_blocks.push(serde_json::json!({
+                            "type": "text",
+                            "text": combined
+                        }));
+                        text_parts.clear();
+                    }
+                    break;
+                }
+                SseEvent::Error { error } => {
+                    error!(err = %error, "SSE 流式错误");
+                    return Err(format!("SSE error: {}", error));
+                }
+                _ => {}
             }
         }
 
-        // Check if we should continue with tool calls
-        let stop_reason = resp_json.get("stop_reason")
-            .and_then(|r| r.as_str())
-            .unwrap_or("");
+        // Add assistant message to all_messages (包含 tool_use blocks)
+        if !assistant_blocks.is_empty() {
+            all_messages.push(serde_json::json!({
+                "role": "assistant",
+                "content": assistant_blocks
+            }));
+        }
 
-        if stop_reason != "tool_use" {
+        // Determine stop_reason
+        let reason = stop_reason.unwrap_or_default();
+
+        info!(stop_reason = %reason, "API stop_reason");
+
+        // Log first 20 chars of accumulated text
+        let preview = final_text.chars().take(20).collect::<String>();
+        info!(text_preview = %preview, "本轮响应前20字");
+
+        if reason != "tool_use" {
             // No more tool calls, we're done
-            let usage = ChatUsage {
-                input_tokens: resp_json.get("usage")
-                    .and_then(|u| u.get("input_tokens"))
-                    .and_then(|v| v.as_u64())
-                    .map(|v| v as u32)
-                    .unwrap_or(0),
-                output_tokens: resp_json.get("usage")
-                    .and_then(|u| u.get("output_tokens"))
-                    .and_then(|v| v.as_u64())
-                    .map(|v| v as u32)
-                    .unwrap_or(0),
-            };
+            // Usage info from streaming is not easily extractable, use 0
             return Ok(ChatResponse {
                 content: final_text,
-                usage: Some(usage),
+                usage: None,
                 tools_used: if tools_used.is_empty() { None } else { Some(tools_used) },
             });
         }
 
-        // Process tool use results
-        if let Some(content) = resp_json.get("content").and_then(|c| c.as_array()) {
-            for item in content {
-                if item.get("type").and_then(|t| t.as_str()) == Some("tool_use") {
-                    let tool_name = item.get("name").and_then(|n| n.as_str()).unwrap_or("");
-                    let tool_input = item.get("input")
-                        .map(|i| serde_json::to_string(i).unwrap_or_default())
-                        .unwrap_or_default();
-                    // MiniMaxi 可能使用不同字段名，尝试多种可能性
-                    let tool_id = item.get("id")
-                        .or_else(|| item.get("tool_use_id"))
-                        .or_else(|| item.get("function_call_id"))
-                        .and_then(|id| id.as_str())
-                        .unwrap_or("");
+        // Process tool use results - extract from assistant_blocks
+        for block in &assistant_blocks {
+            if block.get("type").and_then(|t| t.as_str()) == Some("tool_use") {
+                let tool_name = block.get("name").and_then(|n| n.as_str()).unwrap_or("");
+                let tool_input = block.get("input")
+                    .map(|i| serde_json::to_string(i).unwrap_or_default())
+                    .unwrap_or_default();
+                let tool_id = block.get("id")
+                    .and_then(|id| id.as_str())
+                    .unwrap_or("");
 
-                    info!(tool_name = %tool_name, tool_id = %tool_id, "收到 tool_use");
+                debug!(tool_name = %tool_name, tool_id = %tool_id, "执行工具调用");
 
-                    info!(tool_name = %tool_name, "执行工具调用");
+                // Execute the tool
+                let result = match execute_tool(tool_name, &tool_input) {
+                    Ok(r) => r,
+                    Err(e) => serde_json::json!({ "error": e }).to_string(),
+                };
+                tools_used.push(tool_name.to_string());
 
-                    // Execute the tool
-                    let result = match execute_tool(tool_name, &tool_input) {
-                        Ok(r) => r,
-                        Err(e) => serde_json::json!({ "error": e }).to_string(),
-                    };
-                    tools_used.push(tool_name.to_string());
-
-                    // Add tool result to messages
-                    all_messages.push(serde_json::json!({
-                        "role": "user",
+                // Add tool result to messages - Claude 风格 (claw-code 格式)
+                all_messages.push(serde_json::json!({
+                    "role": "user",
+                    "content": [{
+                        "type": "tool_result",
+                        "tool_use_id": tool_id,
                         "content": [{
-                            "type": "tool_result",
-                            "id": tool_id,
-                            "content": result
+                            "type": "text",
+                            "text": result
                         }]
-                    }));
-                }
+                    }]
+                }));
             }
         }
+
+        // Signal end of this turn
+        let _ = app.emit("chat-turn-end", serde_json::json!({}));
     }
 }
