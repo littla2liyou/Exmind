@@ -1,0 +1,2 @@
+[workspace]
+members = ["runtime", "api", "telemetry", "commands"]

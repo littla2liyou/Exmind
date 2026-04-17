@@ -1,0 +1,7 @@
+{
+  "api": {
+    "base_url": "https://api.minimaxi.com/anthropic",
+    "auth_token": "sk-cp-vnVbGztyBI5zqwLVrT5cUnBvF6ezsJG0GgyrBMKxAwxte9VHV8Ri2_S3YM-AbDr-lmU4gQ1fFiki0_YS5lzer8gq6cbTPAWHjCeIPr9adqApADeCwagu4AM",
+    "model": "MiniMax-M2.7-highspeed"
+  }
+}

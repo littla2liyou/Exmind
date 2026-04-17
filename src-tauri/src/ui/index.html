@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WikiMind</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Left: File List Panel -->
+    <aside class="file-panel" id="filePanel">
+      <div class="panel-header">
+        <span class="panel-title">📁 文件</span>
+        <button class="toolbar-btn small" id="btnOpenFolder" title="打开文件夹">📂</button>
+        <button class="toggle-btn" id="toggleFilePanel" title="折叠">−</button>
+      </div>
+      <div class="file-list" id="fileList">
+        <div class="loading">点击 📂 打开文件夹</div>
+      </div>
+    </aside>
+
+    <!-- Center: Editor (Typora-style) -->
+    <main class="editor-container">
+      <div class="editor-toolbar">
+        <button class="toolbar-btn" id="btnNewFile" title="新建文件">📄 新建</button>
+        <button class="toolbar-btn" id="btnSave" title="保存">💾 保存</button>
+        <button class="toolbar-btn primary" id="btnUpdateWiki" title="更新Wiki (/update)">🔄 Update Wiki</button>
+      </div>
+      <div
+        class="editor"
+        id="editor"
+        contenteditable="true"
+        placeholder="开始写作... 输入 /update 可触发 Wiki 更新"
+      ></div>
+      <div class="editor-footer">
+        <span id="wordCount">0 字</span>
+        <span id="saveStatus"></span>
+      </div>
+    </main>
+
+    <!-- Right: Agent Chat Panel -->
+    <aside class="chat-panel" id="chatPanel">
+      <div class="panel-header">
+        <span class="panel-title">🤖 Agent</span>
+        <button class="toggle-btn" id="toggleChatPanel" title="折叠">−</button>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message agent">
+          <div class="message-content">
+            你好！我是 WikiMind Agent。输入 /update 可更新 Wiki，或在右侧与我对话。
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <select id="styleSelect" class="style-select" title="Wiki风格">
+          <option value="技术风格" selected>技术风格</option>
+          <option value="文艺风格">文艺风格</option>
+          <option value="简洁风格">简洁风格</option>
+          <option value="详细风格">详细风格</option>
+        </select>
+        <input
+          type="text"
+          class="chat-input"
+          id="chatInput"
+          placeholder="问 Agent..."
+        >
+        <button class="send-btn" id="sendBtn">发送</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Style Selection Modal -->
+  <div class="modal" id="styleModal">
+    <div class="modal-content">
+      <h3>选择 Wiki 风格</h3>
+      <div class="style-options">
+        <label class="style-option">
+          <input type="radio" name="wikiStyle" value="文艺风格">
+          <span>🎨 文艺风格</span>
+          <small>优美的文学表达，适合散文和随笔</small>
+        </label>
+        <label class="style-option">
+          <input type="radio" name="wikiStyle" value="技术风格" checked>
+          <span>⚙️ 技术风格</span>
+          <small>清晰的技术文档风格，适合说明文档</small>
+        </label>
+        <label class="style-option">
+          <input type="radio" name="wikiStyle" value="简洁风格">
+          <span>📝 简洁风格</span>
+          <small>简明扼要的表述，适合快速参考</small>
+        </label>
+        <label class="style-option">
+          <input type="radio" name="wikiStyle" value="详细风格">
+          <span>📚 详细风格</span>
+          <small>详尽的内容展开，适合深入学习</small>
+        </label>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn secondary" id="cancelStyle">取消</button>
+        <button class="btn primary" id="confirmStyle">确认更新</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress Modal -->
+  <div class="modal" id="progressModal">
+    <div class="modal-content">
+      <h3>正在更新 Wiki...</h3>
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">Phase 1: 读取文档</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
