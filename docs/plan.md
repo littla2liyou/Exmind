@@ -148,13 +148,19 @@ src/ui/
 **目标**：并与后端重构后的正式 API 进行核心功能的全链路联调。
 
 1. **前后端联调与去 Mock**
-   - 将 `src/api/` 中的 Mock 实现逐步替换为真实的 Tauri `invoke`。
+   - **第一步：文件系统的真实对接 (Workspace 去 Mock)**
+     - 将 `WorkspaceSidebar.tsx` 中的 `MOCK_FILE_TREE` 替换为调用真实的 `tauri.ts -> listDir`，实现真实的本地磁盘目录树读取。
+     - 将 `WorkspaceEditor.tsx` 中的 `MOCK_FILE_CONTENT` 替换为调用真实的 `readFile` 和 `writeFile` 进行文件读写。
+   - **第二步：对话大模型的真实对接 (Chat 去 Mock)**
+     - 在 `ChatPanel.tsx` 中，移除 `setInterval` 模拟的流式输出。
+     - 接入真实的 `tauri.ts -> chat` 命令，并通过 Tauri 的 Event 机制监听 `chat-token` 事件来实现真实的流式逐字输出。
+     - 联调全局 `apiKey` 状态与后端的鉴权机制。
+   - **第三步：AI 修改提案的真实对接 (Diff / Wiki 去 Mock)**
+     - 前端触发“整理到 Wiki”等操作后，调用真实的 `update_wiki` 或相关 AI 生成命令。
+     - 接收后端的提案内容并在前端的 Diff 视图（Monaco DiffEditor 或独立面板）中渲染真实差异。
+     - 用户执行 Accept 时，调用真实的 `write_file` 覆盖目标文件；执行 Reject 时清理状态。
    - 配合后端调整参数结构（特别是前端依赖的“编辑前备份快照 -> Diff -> Accept 触发转正”的新流程）。
    - 跑通端到端的核心场景 S1、S2、S3。
-
-2. **异常处理与边界测试**
-   - 完善网络断开、文件被外部占用、API Key 欠费等情况下的全局错误提示（Mantine Notifications）。
-   - 性能测试：加载大目录或长文档时的渲染表现优化。
 
 ## 阶段6：版本管理
 完成快照回滚 UI，
@@ -163,3 +169,7 @@ src/ui/
    - 弹出 Drawer，调用 Mock 的 `wiki_get_history` 展示时间戳列表。
    - 点击某历史版本，渲染该版本与当前版本的 Diff。
    - 添加“回滚到此版本”按钮（调用 `wiki_rollback` Mock）。
+
+2. **异常处理与边界测试**
+   - 完善网络断开、文件被外部占用、API Key 欠费等情况下的全局错误提示（Mantine Notifications）。
+   - 性能测试：加载大目录或长文档时的渲染表现优化。

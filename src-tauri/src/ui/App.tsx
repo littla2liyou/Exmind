@@ -53,7 +53,6 @@ function App() {
   return (
     <>
       <AppShell
-        header={{ height: 60 }}
         navbar={{
           width: 60, // Shrink to activity bar size
           breakpoint: 'sm',
@@ -62,13 +61,6 @@ function App() {
         aside={{ width: 300, breakpoint: 'md', collapsed: { desktop: false, mobile: true } }}
         padding={0} // Changed from "md" to 0 to manage layout cleanly
       >
-        <AppShell.Header>
-          <Group h="100%" px="md">
-            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Title order={3}>ExMind</Title>
-          </Group>
-        </AppShell.Header>
-
         <AppShell.Navbar p={0} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '16px' }}>
           {navItems.map((item) => (
             <Tooltip key={item.id} label={item.label} position="right" transitionProps={{ duration: 0 }}>
@@ -97,7 +89,7 @@ function App() {
           ))}
         </AppShell.Navbar>
 
-        <AppShell.Main h="100vh" pt={60} display="flex">
+        <AppShell.Main h="100vh" pt={0} display="flex">
           {activeTab === 'settings' ? (
             <Box p="md" w="100%">
               <Stack gap="lg" maw={500}>
@@ -174,7 +166,7 @@ function App() {
         </AppShell.Main>
 
         {activeTab !== 'settings' && (
-          <AppShell.Aside p={0} pt={60} style={{ display: 'flex', flexDirection: 'column' }}>
+          <AppShell.Aside p={0} pt={0} style={{ display: 'flex', flexDirection: 'column' }}>
           {currentProposal ? <DiffPanel /> : <ChatPanel />}
         </AppShell.Aside>
         )}

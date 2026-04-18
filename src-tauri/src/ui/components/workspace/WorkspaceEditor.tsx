@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Group, Button, Title, Text, ActionIcon, Tooltip } from '@mantine/core';
-import { IconDeviceFloppy, IconEye, IconEdit, IconWand } from '@tabler/icons-react';
-import Editor, { useMonaco } from '@monaco-editor/react';
+import { IconDeviceFloppy, IconEye, IconEdit, IconWand, IconCheck, IconX } from '@tabler/icons-react';
+import Editor, { DiffEditor, useMonaco } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useAppStore } from '../../store';
@@ -15,8 +15,9 @@ interface WorkspaceEditorProps {
 export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) => {
   const [content, setContent] = useState('');
   const [isEditing, setIsEditing] = useState(true);
-  const { selectedText, setSelectedText, setCurrentProposal } = useAppStore();
+  const { selectedText, setSelectedText, currentProposal, setCurrentProposal } = useAppStore();
   const editorRef = useRef<any>(null);
+  const diffEditorRef = useRef<any>(null);
 
   useEffect(() => {
     // Mock loading file content
@@ -46,6 +47,36 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
     });
   };
 
+  const handleDiffEditorDidMount = (editor: any, monaco: any) => {
+    diffEditorRef.current = editor;
+  };
+
+  const handleAcceptProposal = () => {
+    if (currentProposal && currentProposal.filePath === filePath) {
+      MOCK_FILE_CONTENT[filePath] = currentProposal.newContent;
+      setContent(currentProposal.newContent);
+      setCurrentProposal(null);
+      notifications.show({
+        title: '已采纳',
+        message: 'AI 的修改已应用到当前文件',
+        color: 'green',
+        icon: <IconCheck size={18} />
+      });
+    }
+  };
+
+  const handleRejectProposal = () => {
+    if (currentProposal && currentProposal.filePath === filePath) {
+      setCurrentProposal(null);
+      notifications.show({
+        title: '已拒绝',
+        message: '已取消 AI 的修改提议',
+        color: 'gray',
+        icon: <IconX size={18} />
+      });
+    }
+  };
+
   const handleSave = () => {
     // Mock save logic
     if (editorRef.current) {
@@ -70,14 +101,14 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
     // Mock triggering a Diff Proposal
     setCurrentProposal({
       id: Date.now().toString(),
-      filePath: 'my-wiki/Organized_Notes.md',
-      oldContent: '# AI 整理笔记\n这里是之前的内容。',
-      newContent: `# AI 整理笔记\n这里是之前的内容。\n\n## 新增提取片段\n\`\`\`\n${selectedText}\n\`\`\`\n\nAI已对该代码进行了注释说明。`
+      filePath: filePath,
+      oldContent: content,
+      newContent: content.replace(selectedText, `// AI Refactored:\n${selectedText}\n// End AI`)
     });
     
     notifications.show({
       title: 'AI 处理中',
-      message: '正在将选中文本提取并整理到 Wiki 提案...',
+      message: '正在生成代码修改提案...',
       color: 'grape',
       icon: <IconWand size={18} />
     });
@@ -132,7 +163,32 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
 
       {/* Editor Area */}
       <Box style={{ flex: 1, position: 'relative', overflow: 'auto' }}>
-        {!isEditing && filePath.endsWith('.md') ? (
+        {currentProposal && currentProposal.filePath === filePath ? (
+          <>
+            <Box style={{ position: 'absolute', top: 10, right: 30, zIndex: 10 }}>
+              <Group gap="sm">
+                <Button size="xs" color="gray" onClick={handleRejectProposal} leftSection={<IconX size={14} />}>Reject</Button>
+                <Button size="xs" color="green" onClick={handleAcceptProposal} leftSection={<IconCheck size={14} />}>Accept</Button>
+              </Group>
+            </Box>
+            <DiffEditor
+              height="100%"
+              language={language}
+              theme="vs-light"
+              original={currentProposal.oldContent}
+              modified={currentProposal.newContent}
+              onMount={handleDiffEditorDidMount}
+              options={{
+                renderSideBySide: true,
+                minimap: { enabled: false },
+                wordWrap: 'on',
+                fontSize: 14,
+                fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace',
+                readOnly: true, // Typically diff editors for proposals are read-only until accepted
+              }}
+            />
+          </>
+        ) : !isEditing && filePath.endsWith('.md') ? (
           <Box p="xl" className="markdown-body">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {content}
