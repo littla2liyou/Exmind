@@ -8,11 +8,13 @@ import { WikiSidebar } from './components/wiki/WikiSidebar';
 import { WikiViewer } from './components/wiki/WikiViewer';
 import { WorkspaceSidebar } from './components/workspace/WorkspaceSidebar';
 import { WorkspaceEditor } from './components/workspace/WorkspaceEditor';
+import { ChatPanel } from './components/chat/ChatPanel';
+import { DiffPanel } from './components/chat/DiffPanel';
 import { MOCK_MY_WIKI_DATA, MOCK_AGENT_WIKI_DATA } from './api/mockWikiData';
 
 function App() {
   const [opened, { toggle }] = useDisclosure();
-  const { rootDir, apiKey, setRootDir, setApiKey, activeTab, setActiveTab, currentWikiFile, setCurrentWikiFile, currentOpenedFile, setCurrentOpenedFile } = useAppStore();
+  const { rootDir, apiKey, setRootDir, setApiKey, activeTab, setActiveTab, currentWikiFile, setCurrentWikiFile, currentOpenedFile, setCurrentOpenedFile, currentProposal } = useAppStore();
   const [setupModalOpened, setSetupModalOpened] = useState(false);
   const [tempDir, setTempDir] = useState('');
 
@@ -172,12 +174,9 @@ function App() {
         </AppShell.Main>
 
         {activeTab !== 'settings' && (
-          <AppShell.Aside p="md" pt={76}>
-            <Title order={4} mb="md">AI 协作</Title>
-            <Text size="sm" c="dimmed">
-              右栏：这里将展示对话界面与 Diff 审批视图。
-            </Text>
-          </AppShell.Aside>
+          <AppShell.Aside p={0} pt={60} style={{ display: 'flex', flexDirection: 'column' }}>
+          {currentProposal ? <DiffPanel /> : <ChatPanel />}
+        </AppShell.Aside>
         )}
       </AppShell>
 

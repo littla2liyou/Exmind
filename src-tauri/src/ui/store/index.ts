@@ -1,5 +1,18 @@
 import { create } from 'zustand';
 
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface DiffProposal {
+  id: string;
+  filePath: string;
+  oldContent: string;
+  newContent: string;
+}
+
 interface AppState {
   rootDir: string | null;
   apiKey: string | null;
@@ -23,6 +36,15 @@ interface AppState {
   // Wiki
   currentWikiFile: any | null;
   setCurrentWikiFile: (file: any | null) => void;
+
+  // AI Chat & Diff
+  messages: ChatMessage[];
+  addMessage: (msg: ChatMessage) => void;
+  appendAssistantMessage: (chunk: string) => void;
+  clearMessages: () => void;
+  
+  currentProposal: DiffProposal | null;
+  setCurrentProposal: (proposal: DiffProposal | null) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -56,4 +78,22 @@ export const useAppStore = create<AppState>((set) => ({
 
   currentWikiFile: null,
   setCurrentWikiFile: (file) => set({ currentWikiFile: file }),
+
+  // AI Chat & Diff
+  messages: [],
+  addMessage: (msg) => set((state) => ({ messages: [...state.messages, msg] })),
+  appendAssistantMessage: (chunk) => set((state) => {
+    const newMessages = [...state.messages];
+    const lastMsg = newMessages[newMessages.length - 1];
+    if (lastMsg && lastMsg.role === 'assistant') {
+      lastMsg.content += chunk;
+    } else {
+      newMessages.push({ id: Date.now().toString(), role: 'assistant', content: chunk });
+    }
+    return { messages: newMessages };
+  }),
+  clearMessages: () => set({ messages: [] }),
+
+  currentProposal: null,
+  setCurrentProposal: (proposal) => set({ currentProposal: proposal }),
 }));

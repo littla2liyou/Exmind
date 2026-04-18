@@ -28,6 +28,7 @@
     "js-yaml": "^4.1.1",
     "react": "^19.2.5",
     "react-arborist": "^3.4.3",
+    "react-diff-viewer-continued": "^4.2.0",
     "react-dom": "^19.2.5",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.14.1",

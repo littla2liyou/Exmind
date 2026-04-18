@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Group, Button, Title, Text, ActionIcon } from '@mantine/core';
-import { IconDeviceFloppy, IconEye, IconEdit } from '@tabler/icons-react';
+import { Box, Group, Button, Title, Text, ActionIcon, Tooltip } from '@mantine/core';
+import { IconDeviceFloppy, IconEye, IconEdit, IconWand } from '@tabler/icons-react';
 import Editor, { useMonaco } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -15,7 +15,7 @@ interface WorkspaceEditorProps {
 export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) => {
   const [content, setContent] = useState('');
   const [isEditing, setIsEditing] = useState(true);
-  const { setSelectedText } = useAppStore();
+  const { selectedText, setSelectedText, setCurrentProposal } = useAppStore();
   const editorRef = useRef<any>(null);
 
   useEffect(() => {
@@ -61,6 +61,28 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
     }
   };
 
+  const handleOrganizeToWiki = () => {
+    if (!selectedText) {
+      notifications.show({ title: '提示', message: '请先在编辑器中选中文本', color: 'yellow' });
+      return;
+    }
+    
+    // Mock triggering a Diff Proposal
+    setCurrentProposal({
+      id: Date.now().toString(),
+      filePath: 'my-wiki/Organized_Notes.md',
+      oldContent: '# AI 整理笔记\n这里是之前的内容。',
+      newContent: `# AI 整理笔记\n这里是之前的内容。\n\n## 新增提取片段\n\`\`\`\n${selectedText}\n\`\`\`\n\nAI已对该代码进行了注释说明。`
+    });
+    
+    notifications.show({
+      title: 'AI 处理中',
+      message: '正在将选中文本提取并整理到 Wiki 提案...',
+      color: 'grape',
+      icon: <IconWand size={18} />
+    });
+  };
+
   // Determine language for monaco
   let language = 'plaintext';
   if (filePath.endsWith('.js') || filePath.endsWith('.jsx')) language = 'javascript';
@@ -76,6 +98,17 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
       <Group justify="space-between" p="xs" style={{ borderBottom: '1px solid var(--mantine-color-default-border)', backgroundColor: 'var(--mantine-color-body)' }}>
         <Title order={5} fw={500}>{filePath}</Title>
         <Group gap="xs">
+          {selectedText && (
+            <Button 
+              size="compact-sm" 
+              variant="light" 
+              color="grape" 
+              leftSection={<IconWand size={16} />} 
+              onClick={handleOrganizeToWiki}
+            >
+              整理到 Wiki
+            </Button>
+          )}
           {filePath.endsWith('.md') && (
             <ActionIcon 
               variant={isEditing ? "light" : "filled"} 
