@@ -5,3 +5,5 @@ dist/
 *.dll
 *.pdb
 .claude/
+**/node_modules/
+test/

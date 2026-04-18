@@ -2,6 +2,28 @@
 
 基于《ExMind PRD（深入版）》与当前后端能力（以及规划的 API Mock/重构方向），制定本前端开发计划。采用“前端先行（Mock-first）”策略，确保在后端业务接口未完全就绪的情况下，前端仍能快速推进并跑通核心交互流。
 
+## 项目结构
+```
+src/ui/
+├── api/                 # 接口层 (保持不变，按需增加接口)
+├── components/          # 所有的 React UI 组件（按业务领域划分）
+│   ├── layout/          # 布局组件 (Header.tsx, Sidebar.tsx 等)
+│   ├── workspace/       # 工作区组件 (FileTree 文件树, FileTabs 文件选项卡等)
+│   ├── editor/          # 编辑器组件 (MonacoWrapper, DiffViewer 差异对比组件)
+│   ├── chat/            # 对话组件 (ChatPanel, MessageList, 提问输入框等)
+│   └── common/          # 通用的基础组件 (自定义按钮、弹窗等)
+├── store/               # 状态管理
+│   ├── appStore.ts      # 全局配置 (根目录、主题、API Key)
+│   ├── fileStore.ts     # 文件状态 (当前打开的文件、未保存状态、目录树缓存)
+│   └── chatStore.ts     # 对话状态 (对话历史、当前 AI 思考状态)
+├── types/               # 全局 TypeScript 类型定义 (如 FileNode, ChatMessage)
+├── utils/               # 工具函数 (如路径拼接、文件后缀名与语言映射)
+├── hooks/               # 自定义 React Hooks (如快捷键绑定 useHotkeys)
+├── App.tsx              # 仅负责将各路 components 拼装到 AppShell
+├── main.tsx             
+└── styles.css           
+```
+
 ---
 
 ## 阶段 0：基础设施与环境搭建 (Day 1)
