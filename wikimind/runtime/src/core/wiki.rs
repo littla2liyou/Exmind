@@ -21,27 +21,30 @@ pub struct WikiPage {
 /// Parses a Markdown file with YAML frontmatter.
 pub fn parse_page(content: &str) -> Result<WikiPage> {
     let matter = Matter::<YAML>::new();
-    let result = matter.parse(content);
-
-    let meta = if let Some(data) = result.data {
-        data.deserialize::<WikiPageMeta>().unwrap_or_else(|_| WikiPageMeta {
-            uid: None,
-            title: None,
-            created_by: None,
-            updated_at: None,
-        })
-    } else {
-        WikiPageMeta {
-            uid: None,
-            title: None,
-            created_by: None,
-            updated_at: None,
+    let (meta, content) = match matter.parse::<WikiPageMeta>(content) {
+        Ok(parsed) => {
+            let meta = parsed.data.unwrap_or_else(|| WikiPageMeta {
+                uid: None,
+                title: None,
+                created_by: None,
+                updated_at: None,
+            });
+            (meta, parsed.content)
+        },
+        Err(_) => {
+            let meta = WikiPageMeta {
+                uid: None,
+                title: None,
+                created_by: None,
+                updated_at: None,
+            };
+            (meta, content.to_string())
         }
     };
 
     Ok(WikiPage {
         meta,
-        content: result.content,
+        content,
     })
 }
 
