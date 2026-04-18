@@ -65,10 +65,33 @@ export async function deletePath(path: string): Promise<void> {
 /**
  * 发送聊天消息 (流式结果需要通过 Tauri Event 'chat-token' 监听)
  */
-export async function chat(messages: ChatMessage[], workspacePath?: string | null, apiKey?: string | null): Promise<ChatResponse> {
+export async function chat(messages: ChatMessage[], workspacePath?: string | null, apiKey?: string | null, rootDir?: string | null): Promise<ChatResponse> {
   return await invoke<ChatResponse>('chat', { 
     messages, 
     workspacePath: workspacePath || null,
-    apiKey: apiKey || null
+    apiKey: apiKey || null,
+    rootDir: rootDir || null
+  });
+}
+
+export interface WikiSection {
+  title: string;
+  content: string;
+}
+
+export interface WikiOutline {
+  sections: WikiSection[];
+}
+
+/**
+ * 触发 Wiki 整理操作
+ */
+export async function updateWiki(docs: string[], style?: string | null, workspacePath?: string | null, apiKey?: string | null, rootDir?: string | null): Promise<WikiOutline> {
+  return await invoke<WikiOutline>('update_wiki', {
+    docs,
+    style: style || null,
+    workspacePath: workspacePath || null,
+    apiKey: apiKey || null,
+    rootDir: rootDir || null
   });
 }

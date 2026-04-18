@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useAppStore } from '../../store';
 import { notifications } from '@mantine/notifications';
-import { readFile, writeFile } from '../../api/tauri';
+import { readFile, writeFile, updateWiki } from '../../api/tauri';
 
 interface WorkspaceEditorProps {
   filePath: string;
@@ -17,7 +17,8 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
   const [isEditing, setIsEditing] = useState(true);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const { selectedText, setSelectedText, currentProposal, setCurrentProposal } = useAppStore();
+  const [isOrganizing, setIsOrganizing] = useState(false);
+  const { selectedText, setSelectedText, currentProposal, setCurrentProposal, workspaceDir, apiKey, rootDir } = useAppStore();
   const editorRef = useRef<any>(null);
   const diffEditorRef = useRef<any>(null);
 
@@ -134,26 +135,53 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
     }
   };
 
-  const handleOrganizeToWiki = () => {
+  const handleOrganizeToWiki = async () => {
     if (!selectedText) {
       notifications.show({ title: '提示', message: '请先在编辑器中选中文本', color: 'yellow' });
       return;
     }
     
-    // Mock triggering a Diff Proposal
-    setCurrentProposal({
-      id: Date.now().toString(),
-      filePath: filePath,
-      oldContent: content,
-      newContent: content.replace(selectedText, `// AI Refactored:\n${selectedText}\n// End AI`)
-    });
-    
+    setIsOrganizing(true);
     notifications.show({
+      id: 'organize-wiki',
       title: 'AI 处理中',
       message: '正在生成代码修改提案...',
       color: 'grape',
-      icon: <IconWand size={18} />
+      icon: <IconWand size={18} />,
+      loading: true,
+      autoClose: false
     });
+
+    try {
+      const response = await updateWiki([selectedText], '技术风格', workspaceDir, apiKey, rootDir);
+      
+      // We no longer append to the current file.
+      // updateWiki has saved the files to agent-wiki.
+      // We just notify the user it's done.
+
+      notifications.update({
+        id: 'organize-wiki',
+        title: '处理完成',
+        message: 'AI 提案已生成并保存到 Agent Wiki，请在左侧 Wiki 侧边栏查看。',
+        color: 'green',
+        icon: <IconCheck size={18} />,
+        loading: false,
+        autoClose: 5000
+      });
+    } catch (error) {
+      console.error("Failed to organize to wiki:", error);
+      notifications.update({
+        id: 'organize-wiki',
+        title: '处理失败',
+        message: `无法生成提案: ${error}`,
+        color: 'red',
+        icon: <IconX size={18} />,
+        loading: false,
+        autoClose: 3000
+      });
+    } finally {
+      setIsOrganizing(false);
+    }
   };
 
   // Determine language for monaco
@@ -178,6 +206,7 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
               color="grape" 
               leftSection={<IconWand size={16} />} 
               onClick={handleOrganizeToWiki}
+              loading={isOrganizing}
             >
               整理到 Wiki
             </Button>

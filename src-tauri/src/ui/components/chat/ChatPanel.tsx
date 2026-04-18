@@ -8,7 +8,7 @@ import { chat } from '../../api/tauri';
 import { listen } from '@tauri-apps/api/event';
 
 export const ChatPanel: React.FC = () => {
-  const { messages, addMessage, appendAssistantMessage, selectedText, workspaceDir, apiKey } = useAppStore();
+  const { messages, addMessage, appendAssistantMessage, selectedText, workspaceDir, apiKey, rootDir } = useAppStore();
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -51,7 +51,7 @@ export const ChatPanel: React.FC = () => {
       history.push({ role: 'user', content: userMsgContent });
 
       // Call real backend API
-      const response = await chat(history, workspaceDir, apiKey);
+      const response = await chat(history, workspaceDir, apiKey, rootDir);
       
       unlisten();
     } catch (error) {

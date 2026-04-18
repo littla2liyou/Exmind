@@ -95,7 +95,12 @@ pub async fn update_wiki(
     docs: Vec<String>,
     style: Option<String>,
     workspace_path: Option<String>,
+    api_key: Option<String>,
+    root_dir: Option<String>,
 ) -> Result<WikiOutline, String> {
+    if let Some(key) = api_key {
+        std::env::set_var("ANTHROPIC_API_KEY", key);
+    }
     let style = match style.as_deref() {
         Some("文艺风格") => WikiStyle::Literary,
         Some("简洁风格") => WikiStyle::Simple,
@@ -187,26 +192,67 @@ pub async fn update_wiki(
         "sections_count": final_sections.len()
     }));
 
-    // Save wiki content to notes/{workspace_name}-wiki-notes/ directory
-    if let Some(ws) = workspace_path {
+    // Determine the actual wiki save directory based on root_dir or workspace
+    let wiki_dir = if let Some(root) = root_dir {
+        let mut path = PathBuf::from(root);
+        path.push("agent-wiki");
+        path
+    } else if let Some(ws) = workspace_path {
         let ws_name = PathBuf::from(&ws)
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "workspace".to_string());
+        PathBuf::from("notes").join(format!("{}-wiki-notes", ws_name))
+    } else {
+        PathBuf::from("agent-wiki")
+    };
 
-        let wiki_dir = PathBuf::from("notes")
-            .join(format!("{}-wiki-notes", ws_name));
+    info!(target_dir = %wiki_dir.display(), "准备保存 Wiki 大纲到目录");
 
-        if std::fs::create_dir_all(&wiki_dir).is_ok() {
-            for section in &final_sections {
-                let filename = format!("{}.md", section.title.replace(" ", "_"));
-                let filepath = wiki_dir.join(&filename);
-                let content = format!("# {}\n\n{}", section.title, section.content);
-                if let Err(e) = std::fs::write(&filepath, content) {
-                    error!(err = %e, path = %filepath.display(), "保存 wiki 文件失败");
-                } else {
-                    info!(path = %filepath.display(), "Wiki 文件已保存");
-                }
+    if let Err(e) = std::fs::create_dir_all(&wiki_dir) {
+        error!(dir = %wiki_dir.display(), err = %e, "创建 Wiki 目录失败");
+    } else {
+        for (idx, section) in final_sections.iter().enumerate() {
+            // Sanitize filename carefully
+            let filename = format!("{}.md", section.title
+                .replace(" ", "_")
+                .replace("/", "-")
+                .replace("\\", "-")
+                .replace(":", "-")
+                .replace("*", "-")
+                .replace("?", "-")
+                .replace("\"", "-")
+                .replace("<", "-")
+                .replace(">", "-")
+                .replace("|", "-")
+            );
+            
+            let filepath = wiki_dir.join(&filename);
+            
+            // 基于 PRD 定义，生成 YAML Frontmatter 元数据
+            let timestamp = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs();
+            let uid = format!("{}-{}", timestamp, idx);
+            
+            let frontmatter = format!(
+r#"---
+uid: "{}"
+title: "{}"
+type: "topic"
+created_by: "ai"
+source:
+  kind: "workspace"
+---"#,
+                uid, section.title
+            );
+            
+            let content = format!("{}\n\n# {}\n\n{}", frontmatter, section.title, section.content);
+            
+            match std::fs::write(&filepath, content) {
+                Ok(_) => info!(path = %filepath.display(), "Wiki 文件已成功写入硬盘"),
+                Err(e) => error!(err = %e, path = %filepath.display(), "保存 wiki 文件物理写入失败"),
             }
         }
     }
