@@ -20,6 +20,9 @@ pub use memory::{
 pub mod tools;
 pub use tools::{file_ops, git_context};
 
+// ─── Core ───────────────────────────────────────────────────────────────────
+pub mod core;
+
 // ─── Infra ──────────────────────────────────────────────────────────────────
 pub mod infra;
 pub use infra::usage::TokenUsage;

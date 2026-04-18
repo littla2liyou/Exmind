@@ -21,3 +21,9 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 anyhow = "1"
 thiserror = "1"
 wikimind-telemetry = { path = "../telemetry" }
+similar = "3.1.0"
+gray_matter = "0.3.2"
+chrono = "0.4.44"
+async-trait = "0.1.89"
+eventsource-stream = "0.2.3"
+dirs = "6.0.0"
