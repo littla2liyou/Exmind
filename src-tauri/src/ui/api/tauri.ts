@@ -65,6 +65,10 @@ export async function deletePath(path: string): Promise<void> {
 /**
  * 发送聊天消息 (流式结果需要通过 Tauri Event 'chat-token' 监听)
  */
-export async function chat(messages: ChatMessage[]): Promise<ChatResponse> {
-  return await invoke<ChatResponse>('chat', { messages });
+export async function chat(messages: ChatMessage[], workspacePath?: string | null, apiKey?: string | null): Promise<ChatResponse> {
+  return await invoke<ChatResponse>('chat', { 
+    messages, 
+    workspacePath: workspacePath || null,
+    apiKey: apiKey || null
+  });
 }

@@ -253,8 +253,13 @@ pub async fn chat(
     app: AppHandle,
     messages: Vec<ChatMessage>,
     workspace_path: Option<String>,
+    api_key: Option<String>,
 ) -> Result<ChatResponse, String> {
     info!(role = "chat", message_len = messages.len(), "收到 chat 请求");
+
+    if let Some(key) = api_key {
+        std::env::set_var("ANTHROPIC_API_KEY", key);
+    }
 
     let system_prompt = build_system_prompt(workspace_path.clone());
 

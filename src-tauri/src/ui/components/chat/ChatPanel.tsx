@@ -4,9 +4,11 @@ import { IconSend, IconRobot, IconUser } from '@tabler/icons-react';
 import { useAppStore } from '../../store';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { chat } from '../../api/tauri';
+import { listen } from '@tauri-apps/api/event';
 
 export const ChatPanel: React.FC = () => {
-  const { messages, addMessage, appendAssistantMessage, selectedText } = useAppStore();
+  const { messages, addMessage, appendAssistantMessage, selectedText, workspaceDir, apiKey } = useAppStore();
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -21,30 +23,43 @@ export const ChatPanel: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMsg = input;
+    let userMsgContent = input;
     setInput('');
-    addMessage({ id: Date.now().toString(), role: 'user', content: userMsg });
+    
+    if (selectedText) {
+      userMsgContent += `\n\n\`\`\`\n${selectedText}\n\`\`\``;
+    }
+    
+    addMessage({ id: Date.now().toString(), role: 'user', content: userMsgContent });
     setIsTyping(true);
 
-    // Mock API Stream
-    let mockResponse = "这是一个 Mock 的流式回答。";
-    if (selectedText) {
-      mockResponse += `\n\n您刚刚选中了这段代码：\n\`\`\`\n${selectedText}\n\`\`\`\n我可以为您解释或重构它。`;
-    }
+    try {
+      const unlisten = await listen('chat-token', (event: any) => {
+        if (event.payload && event.payload.token) {
+          appendAssistantMessage(event.payload.token);
+        }
+      });
 
-    let i = 0;
-    const timer = setInterval(() => {
-      if (i < mockResponse.length) {
-        appendAssistantMessage(mockResponse[i]);
-        i++;
-      } else {
-        clearInterval(timer);
-        setIsTyping(false);
-      }
-    }, 50);
+      // We get fresh messages from store + the new user message
+      const history = messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+      history.push({ role: 'user', content: userMsgContent });
+
+      // Call real backend API
+      const response = await chat(history, workspaceDir, apiKey);
+      
+      unlisten();
+    } catch (error) {
+      console.error("Chat error:", error);
+      appendAssistantMessage(`\n\n**Error:** ${error}`);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   return (
