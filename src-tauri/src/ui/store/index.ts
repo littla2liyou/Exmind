@@ -6,6 +6,10 @@ interface AppState {
   setRootDir: (dir: string) => void;
   setApiKey: (key: string) => void;
   
+  // Workspace specific
+  workspaceDir: string | null;
+  setWorkspaceDir: (dir: string) => void;
+  
   // Navigation
   activeTab: 'workspace' | 'my-wiki' | 'agent-wiki' | 'settings';
   setActiveTab: (tab: 'workspace' | 'my-wiki' | 'agent-wiki' | 'settings') => void;
@@ -24,6 +28,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   rootDir: localStorage.getItem('exmind_root_dir') || null,
   apiKey: localStorage.getItem('exmind_api_key') || null,
+  workspaceDir: localStorage.getItem('exmind_workspace_dir') || localStorage.getItem('exmind_root_dir') || null,
   
   setRootDir: (dir) => {
     localStorage.setItem('exmind_root_dir', dir);
@@ -33,6 +38,11 @@ export const useAppStore = create<AppState>((set) => ({
   setApiKey: (key) => {
     localStorage.setItem('exmind_api_key', key);
     set({ apiKey: key });
+  },
+
+  setWorkspaceDir: (dir) => {
+    localStorage.setItem('exmind_workspace_dir', dir);
+    set({ workspaceDir: dir });
   },
   
   activeTab: 'workspace',

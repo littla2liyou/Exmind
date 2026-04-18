@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Paper, Badge, Group, Title, Button } from '@mantine/core';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import matter from 'gray-matter';
+import yaml from 'js-yaml';
 import { IconCopy } from '@tabler/icons-react';
 
 interface WikiViewerProps {
@@ -18,9 +18,17 @@ export const WikiViewer: React.FC<WikiViewerProps> = ({ content, isAgentWiki, on
   useEffect(() => {
     try {
       // Parse frontmatter
-      const { data, content: textContent } = matter(content);
-      setMetadata(data);
-      setMarkdownContent(textContent);
+      const match = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
+      if (match) {
+        const yamlStr = match[1];
+        const data = yaml.load(yamlStr) as any;
+        const textContent = content.slice(match[0].length);
+        setMetadata(data || {});
+        setMarkdownContent(textContent);
+      } else {
+        setMetadata({});
+        setMarkdownContent(content);
+      }
     } catch (e) {
       console.error('Failed to parse frontmatter', e);
       setMarkdownContent(content);

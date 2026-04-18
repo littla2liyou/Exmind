@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AppShell, Burger, Group, NavLink, Title, Text, Button, Modal, TextInput, Stack, Center, Box } from '@mantine/core';
+import { AppShell, Burger, Group, NavLink, Title, Text, Button, Modal, TextInput, Stack, Center, Box, Tooltip, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconFolder, IconBook, IconRobot, IconSettings } from '@tabler/icons-react';
 import { useAppStore } from './store';
@@ -42,10 +42,10 @@ function App() {
   };
 
   const navItems = [
-    { icon: <IconFolder size="1rem" stroke={1.5} />, label: 'Workspace', id: 'workspace' },
-    { icon: <IconBook size="1rem" stroke={1.5} />, label: 'My Wiki', id: 'my-wiki' },
-    { icon: <IconRobot size="1rem" stroke={1.5} />, label: 'Agent Wiki', id: 'agent-wiki' },
-    { icon: <IconSettings size="1rem" stroke={1.5} />, label: 'Settings', id: 'settings' },
+    { icon: <IconFolder size="1.4rem" stroke={1.5} />, label: 'Workspace', id: 'workspace' },
+    { icon: <IconBook size="1.4rem" stroke={1.5} />, label: 'My Wiki', id: 'my-wiki' },
+    { icon: <IconRobot size="1.4rem" stroke={1.5} />, label: 'Agent Wiki', id: 'agent-wiki' },
+    { icon: <IconSettings size="1.4rem" stroke={1.5} />, label: 'Settings', id: 'settings' },
   ] as const;
 
   return (
@@ -53,7 +53,7 @@ function App() {
       <AppShell
         header={{ height: 60 }}
         navbar={{
-          width: 250,
+          width: 60, // Shrink to activity bar size
           breakpoint: 'sm',
           collapsed: { mobile: !opened },
         }}
@@ -67,19 +67,31 @@ function App() {
           </Group>
         </AppShell.Header>
 
-        <AppShell.Navbar p="md">
+        <AppShell.Navbar p={0} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '16px' }}>
           {navItems.map((item) => (
-            <NavLink
-              key={item.id}
-              active={item.id === activeTab}
-              label={item.label}
-              leftSection={item.icon}
-              onClick={() => {
-                setActiveTab(item.id);
-                if (item.id !== 'my-wiki' && item.id !== 'agent-wiki') setCurrentWikiFile(null);
-                if (item.id !== 'workspace') setCurrentOpenedFile(null);
-              }}
-            />
+            <Tooltip key={item.id} label={item.label} position="right" transitionProps={{ duration: 0 }}>
+              <UnstyledButton
+                onClick={() => {
+                  setActiveTab(item.id);
+                  if (item.id !== 'my-wiki' && item.id !== 'agent-wiki') setCurrentWikiFile(null);
+                  if (item.id !== 'workspace') setCurrentOpenedFile(null);
+                }}
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '8px',
+                  color: activeTab === item.id ? 'var(--mantine-color-blue-filled)' : 'var(--mantine-color-gray-6)',
+                  backgroundColor: activeTab === item.id ? 'var(--mantine-color-blue-light)' : 'transparent',
+                  marginBottom: '8px',
+                  transition: 'background-color 0.2s',
+                }}
+              >
+                {item.icon}
+              </UnstyledButton>
+            </Tooltip>
           ))}
         </AppShell.Navbar>
 
