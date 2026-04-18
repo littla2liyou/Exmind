@@ -7,3 +7,4 @@ dist/
 .claude/
 **/node_modules/
 test/
+notes/

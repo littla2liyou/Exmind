@@ -1,12 +1,12 @@
 <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024.000000" height="1024.000000" fill="none">
 	<defs>
-		<clipPath id="clipPath_6">
-			<rect width="879.000000" height="813.000000" x="73.000000" y="105.000000" fill="rgb(255,255,255)" />
+		<clipPath id="clipPath_8">
+			<rect width="879.000000" height="813.000000" x="73.000000" y="105.000000" rx="100.000000" fill="rgb(255,255,255)" />
 		</clipPath>
-		<g id="pixso_custom_effect_6">
+		<g id="pixso_custom_effect_8">
 			<effect x="0.000000" y="4.000000" visibility="visible" fill="rgb(0,0,0)" fill-opacity="0.25" effectType="innerShadow" stdDeviation="4" radius="0" />
 		</g>
-		<filter id="filter_6" width="879.000000" height="813.000000" x="73.000000" y="105.000000" filterUnits="userSpaceOnUse" customEffect="url(#pixso_custom_effect_6)" color-interpolation-filters="sRGB">
+		<filter id="filter_8" width="879.000000" height="813.000000" x="74.000000" y="105.000000" filterUnits="userSpaceOnUse" customEffect="url(#pixso_custom_effect_8)" color-interpolation-filters="sRGB">
 			<feFlood flood-opacity="0" result="BackgroundImageFix" />
 			<feBlend result="shape" in="SourceGraphic" in2="BackgroundImageFix" mode="normal" />
 			<feColorMatrix result="hardAlpha" in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0 " />
@@ -16,52 +16,52 @@
 			<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0 " />
 			<feBlend result="effect_innerShadow_1" in2="shape" mode="normal" />
 		</filter>
-		<clipPath id="clipPath_7">
-			<rect width="879.000000" height="813.000000" x="73.000000" y="105.000000" fill="rgb(255,255,255)" />
+		<clipPath id="clipPath_9">
+			<rect width="879.000000" height="813.000000" x="74.000000" y="105.000000" fill="rgb(255,255,255)" />
 		</clipPath>
-		<linearGradient id="paint_linear_6" x1="462.112122" x2="462.112122" y1="-20" y2="20" gradientUnits="userSpaceOnUse">
+		<linearGradient id="paint_linear_8" x1="462.112122" x2="462.112122" y1="-20" y2="20" gradientUnits="userSpaceOnUse">
 			<stop stop-color="rgb(0,0,0)" offset="0" stop-opacity="1" />
 			<stop stop-color="rgb(0,0,0)" offset="1" stop-opacity="0" />
 		</linearGradient>
-		<g id="pixso_custom_effect_7">
+		<g id="pixso_custom_effect_9">
 			<effect visibility="visible" effectType="backgroundBlur" saturation="0" stdDeviation="4" />
 		</g>
-		<filter id="filter_7" width="489.685516" height="694.900146" x="487.412872" y="248.231232" filterUnits="userSpaceOnUse" customEffect="url(#pixso_custom_effect_7)" color-interpolation-filters="sRGB">
+		<filter id="filter_9" width="539.870911" height="745.085571" x="462.320190" y="223.138489" filterUnits="userSpaceOnUse" customEffect="url(#pixso_custom_effect_9)" color-interpolation-filters="sRGB">
 			<feFlood flood-opacity="0" result="BackgroundImageFix" />
 			<feBlend result="shape" in="SourceGraphic" in2="BackgroundImageFix" mode="normal" />
 		</filter>
-		<clipPath id="outline_mask_3" transform="matrix(1,0,0,1,-487.413,-248.231)">
-			<path d="M0 -25L780.268 -25L780.268 25L0 25L0 -25ZM0.02 24.98L0 25C-14 25 -25 14 -25 -0C-25 -14 -14 -25 0 -25L0.02 -24.98L0.02 24.98ZM780.248 -24.98L780.268 -25C794.268 -25 805.268 -14 805.268 0C805.268 14 794.268 25 780.268 25L780.248 24.98L780.248 -24.98Z" fill="rgb(255,255,255)" fill-rule="nonzero" transform="matrix(0.563268,0.826274,-0.826274,0.563268,512.506,273.324)" />
+		<clipPath id="outline_mask_4" transform="matrix(1,0,0,1,-462.32,-223.138)">
+			<path d="M0 -50L780.268 -50L780.268 50L0 50L0 -50ZM0.02 49.98L0 50C-28 50 -50 28 -50 -0C-50 -28 -28 -50 0 -50L0.02 -49.98L0.02 49.98ZM780.248 -49.98L780.268 -50C808.268 -50 830.268 -28 830.268 0C830.268 28 808.268 50 780.268 50L780.248 49.98L780.248 -49.98Z" fill="rgb(255,255,255)" fill-rule="nonzero" transform="matrix(0.563268,0.826274,-0.826274,0.563268,512.506,273.324)" />
 		</clipPath>
-		<linearGradient id="paint_linear_7" x1="390.13382" x2="390.13382" y1="-20" y2="20" gradientUnits="userSpaceOnUse">
+		<linearGradient id="paint_linear_9" x1="390.13382" x2="390.13382" y1="-20" y2="20" gradientUnits="userSpaceOnUse">
 			<stop stop-color="rgb(0,0,0)" offset="0" stop-opacity="1" />
 			<stop stop-color="rgb(0,0,0)" offset="1" stop-opacity="0" />
 		</linearGradient>
 	</defs>
 	<rect id="尺寸2" width="1024.000000" height="1024.000000" x="0.000000" y="0.000000" fill="rgb(255,255,255)" fill-opacity="0" />
 	<g id="组合 1">
-		<g id="容器 1" clip-path="url(#clipPath_6)" customFrame="url(#clipPath_6)">
-			<rect id="容器 1" width="879.000000" height="813.000000" x="73.000000" y="105.000000" />
-			<g id="尺寸3" clip-path="url(#clipPath_7)" filter="url(#filter_6)" customFrame="url(#clipPath_7)">
-				<rect id="尺寸3" width="879.000000" height="813.000000" x="73.000000" y="105.000000" fill="rgb(255,255,255)" />
+		<g id="容器 1" clip-path="url(#clipPath_8)" customFrame="url(#clipPath_8)">
+			<g id="尺寸3" clip-path="url(#clipPath_9)" filter="url(#filter_8)" customFrame="url(#clipPath_9)">
+				<rect id="尺寸3" width="879.000000" height="813.000000" x="74.000000" y="105.000000" fill="rgb(255,255,255)" />
 			</g>
 			<g id="组合 2">
-				<line id="直线 1" x1="0" x2="924.224243" y1="0" y2="0" stroke="url(#paint_linear_6)" stroke-width="50.000000" transform="matrix(0.475535,0.879697,-0.879697,0.475535,73.0059,105)" />
-				<line id="直线 2" x1="0" x2="987.471558" y1="0" y2="0" stroke="rgb(0,0,0)" stroke-width="50.000000" transform="matrix(-0.471154,0.882051,-0.882051,-0.471154,952.006,104.999)" />
-				<line id="直线 2" x1="0" x2="987.471558" y1="0" y2="0" stroke="rgb(0,0,0)" stroke-opacity="0.200000003" stroke-width="50.000000" transform="matrix(-0.471154,0.882051,-0.882051,-0.471154,952.006,104.999)" />
-				<path id="直线 3" d="M0 -25L780.267 -25L780.267 25L0 25L0 -25ZM0.02 24.98L0 25C-14 25 -25 14 -25 -0C-25 -14 -14 -25 0 -25L0.02 -24.98L0.02 24.98Z" fill="rgb(0,0,0)" fill-rule="nonzero" transform="matrix(-0.563264,0.826277,-0.826277,-0.563264,512.502,273.324)" />
-				<path id="直线 3" d="M0 -25L780.267 -25L780.267 25L0 25L0 -25ZM0.02 24.98L0 25C-14 25 -25 14 -25 -0C-25 -14 -14 -25 0 -25L0.02 -24.98L0.02 24.98Z" fill="rgb(0,0,0)" fill-opacity="0.200000003" fill-rule="nonzero" transform="matrix(-0.563264,0.826277,-0.826277,-0.563264,512.502,273.324)" />
+				<line id="直线 2" x1="0" x2="987.471558" y1="0" y2="0" stroke="rgb(0,0,0)" stroke-width="80.000000" transform="matrix(-0.471154,0.882051,-0.882051,-0.471154,952.006,104.999)" />
+				<line id="直线 2" x1="0" x2="987.471558" y1="0" y2="0" stroke="rgb(0,0,0)" stroke-opacity="0.200000003" stroke-width="80.000000" transform="matrix(-0.471154,0.882051,-0.882051,-0.471154,952.006,104.999)" />
+				<line id="直线 1" x1="0" x2="924.224243" y1="0" y2="0" stroke="url(#paint_linear_8)" stroke-width="100.000000" transform="matrix(0.475535,0.879697,-0.879697,0.475535,73.0059,105)" />
+				<path id="直线 3" d="M0 -40L780.267 -40L780.267 40L0 40L0 -40ZM0.02 39.98L0 40C-22.4 40 -40 22.4 -40 -0C-40 -22.4 -22.4 -40 0 -40L0.02 -39.98L0.02 39.98Z" fill="rgb(0,0,0)" fill-rule="nonzero" transform="matrix(-0.563264,0.826277,-0.826277,-0.563264,512.502,273.324)" />
+				<path id="直线 3" d="M0 -40L780.267 -40L780.267 40L0 40L0 -40ZM0.02 39.98L0 40C-22.4 40 -40 22.4 -40 -0C-40 -22.4 -22.4 -40 0 -40L0.02 -39.98L0.02 39.98Z" fill="rgb(0,0,0)" fill-opacity="0.200000003" fill-rule="nonzero" transform="matrix(-0.563264,0.826277,-0.826277,-0.563264,512.502,273.324)" />
 				<g data-pixso-skip-parse="true">
-					<foreignObject width="489.685516" height="694.900146" x="487.412872" y="248.231232">
-						<div xmlns="http://www.w3.org/1999/xhtml" style="clip-path:url(#outline_mask_3);height:100%;backdrop-filter:blur(2.000000px);width:100%;-webkit-backdrop-filter:blur(2.000000px);" />
+					<foreignObject width="539.870911" height="745.085571" x="462.320190" y="223.138489">
+						<div xmlns="http://www.w3.org/1999/xhtml" style="clip-path:url(#outline_mask_4);height:100%;backdrop-filter:blur(2.000000px);width:100%;-webkit-backdrop-filter:blur(2.000000px);" />
 					</foreignObject>
 				</g>
-				<g filter="url(#filter_7)">
-					<path id="直线 4" d="M0 0L780.268 0" stroke="url(#paint_linear_7)" stroke-opacity="0.409999996" stroke-linecap="round" stroke-width="50.000000" transform="matrix(0.563268,0.826274,-0.826274,0.563268,512.506,273.324)" />
+				<g filter="url(#filter_9)">
+					<path id="直线 4" d="M0 0L780.268 0" stroke="url(#paint_linear_9)" stroke-opacity="0.409999996" stroke-linecap="round" stroke-width="100.000000" transform="matrix(0.563268,0.826274,-0.826274,0.563268,512.506,273.324)" />
 				</g>
-				<line id="直线 5" x1="512.505615" x2="512.506592" y1="273.324005" y2="273.324005" stroke="rgb(0,0,0)" stroke-width="40.000000" />
-				<line id="直线 5" x1="512.505615" x2="512.506592" y1="273.324005" y2="273.324005" stroke="rgb(0,0,0)" stroke-opacity="0.200000003" stroke-width="40.000000" />
+				<line id="直线 5" x1="512.505615" x2="512.506592" y1="273.323975" y2="273.323975" opacity="0" stroke="rgb(0,0,0)" stroke-width="80.000000" />
+				<line id="直线 5" x1="512.505615" x2="512.506592" y1="273.323975" y2="273.323975" opacity="0" stroke="rgb(0,0,0)" stroke-opacity="0.200000003" stroke-width="80.000000" />
 			</g>
+			<rect id="容器 1" width="877.000000" height="811.000000" x="74.000000" y="106.000000" rx="99.000000" stroke="rgb(0,0,0)" stroke-width="2.000000" />
 		</g>
 	</g>
 </svg>
