@@ -51,3 +51,21 @@ pub fn write_file(path: String, content: String) -> Result<(), String> {
         .map(|_| ())
         .map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub fn create_dir(path: String) -> Result<(), String> {
+    std::fs::create_dir_all(&path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn delete_path(path: String) -> Result<(), String> {
+    let p = PathBuf::from(&path);
+    if !p.exists() {
+        return Ok(());
+    }
+    if p.is_dir() {
+        std::fs::remove_dir_all(&p).map_err(|e| e.to_string())
+    } else {
+        std::fs::remove_file(&p).map_err(|e| e.to_string())
+    }
+}

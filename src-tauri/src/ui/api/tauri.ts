@@ -49,6 +49,20 @@ export async function writeFile(path: string, content: string): Promise<void> {
 }
 
 /**
+ * 创建文件夹
+ */
+export async function createDir(path: string): Promise<void> {
+  return await invoke<void>('create_dir', { path });
+}
+
+/**
+ * 删除文件或文件夹
+ */
+export async function deletePath(path: string): Promise<void> {
+  return await invoke<void>('delete_path', { path });
+}
+
+/**
  * 发送聊天消息 (流式结果需要通过 Tauri Event 'chat-token' 监听)
  */
 export async function chat(messages: ChatMessage[]): Promise<ChatResponse> {

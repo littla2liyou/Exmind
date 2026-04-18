@@ -10,7 +10,7 @@ import { WorkspaceSidebar } from './components/workspace/WorkspaceSidebar';
 import { WorkspaceEditor } from './components/workspace/WorkspaceEditor';
 import { ChatPanel } from './components/chat/ChatPanel';
 import { DiffPanel } from './components/chat/DiffPanel';
-import { MOCK_MY_WIKI_DATA, MOCK_AGENT_WIKI_DATA } from './api/mockWikiData';
+import { createDir } from './api/tauri';
 
 function App() {
   const [opened, { toggle }] = useDisclosure();
@@ -25,7 +25,7 @@ function App() {
     }
   }, [rootDir]);
 
-  const handleSetupComplete = () => {
+  const handleSetupComplete = async () => {
     if (!tempDir.trim()) {
       notifications.show({
         title: '错误',
@@ -34,13 +34,26 @@ function App() {
       });
       return;
     }
-    setRootDir(tempDir);
-    setSetupModalOpened(false);
-    notifications.show({
-      title: '初始化成功',
-      message: '欢迎使用 ExMind',
-      color: 'green'
-    });
+    try {
+      const separator = tempDir.includes('\\') ? '\\' : '/';
+      await createDir(tempDir);
+      await createDir(`${tempDir}${separator}my-wiki`);
+      await createDir(`${tempDir}${separator}agent-wiki`);
+      
+      setRootDir(tempDir);
+      setSetupModalOpened(false);
+      notifications.show({
+        title: '初始化成功',
+        message: '欢迎使用 ExMind',
+        color: 'green'
+      });
+    } catch (error) {
+      notifications.show({
+        title: '初始化失败',
+        message: `无法创建目录: ${error}`,
+        color: 'red'
+      });
+    }
   };
 
   const navItems = [
@@ -117,12 +130,16 @@ function App() {
             <Group align="flex-start" wrap="nowrap" gap={0} h="100%" w="100%">
               {/* Secondary Sidebar for Wiki File List */}
               <Box w={250} h="100%" style={{ borderRight: '1px solid var(--mantine-color-default-border)', backgroundColor: 'var(--mantine-color-body)' }}>
-                <WikiSidebar 
-                  title={activeTab === 'my-wiki' ? 'My Wiki' : 'Agent Wiki'}
-                  data={activeTab === 'my-wiki' ? MOCK_MY_WIKI_DATA : MOCK_AGENT_WIKI_DATA}
-                  activeFileId={currentWikiFile?.id || null}
-                  onFileSelect={setCurrentWikiFile}
-                />
+                {rootDir ? (
+                  <WikiSidebar 
+                    title={activeTab === 'my-wiki' ? 'My Wiki' : 'Agent Wiki'}
+                    basePath={activeTab === 'my-wiki' ? `${rootDir}${rootDir.includes('\\') ? '\\' : '/'}my-wiki` : `${rootDir}${rootDir.includes('\\') ? '\\' : '/'}agent-wiki`}
+                    activeFileId={currentWikiFile?.id || null}
+                    onFileSelect={setCurrentWikiFile}
+                  />
+                ) : (
+                  <Center h="100%"><Text c="dimmed">请先配置根目录</Text></Center>
+                )}
               </Box>
               {/* Markdown Viewer */}
               <Box style={{ flex: 1, height: '100%', backgroundColor: 'var(--mantine-color-gray-0)' }}>

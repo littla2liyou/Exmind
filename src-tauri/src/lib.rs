@@ -65,6 +65,8 @@ pub fn run() {
             pick_folder,
             wikimind_commands::file_ops::read_file,
             wikimind_commands::file_ops::write_file,
+            wikimind_commands::file_ops::create_dir,
+            wikimind_commands::file_ops::delete_path,
             wikimind_commands::chat::chat,
             wikimind_commands::update_wiki::update_wiki,
         ])

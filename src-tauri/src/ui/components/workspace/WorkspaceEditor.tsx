@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Group, Button, Title, Text, ActionIcon, Tooltip } from '@mantine/core';
+import { Box, Group, Button, Title, Text, ActionIcon, Tooltip, Loader, Center } from '@mantine/core';
 import { IconDeviceFloppy, IconEye, IconEdit, IconWand, IconCheck, IconX } from '@tabler/icons-react';
 import Editor, { DiffEditor, useMonaco } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useAppStore } from '../../store';
 import { notifications } from '@mantine/notifications';
-import { MOCK_FILE_CONTENT } from '../../api/mockWorkspaceData';
+import { readFile, writeFile } from '../../api/tauri';
 
 interface WorkspaceEditorProps {
   filePath: string;
@@ -15,14 +15,33 @@ interface WorkspaceEditorProps {
 export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) => {
   const [content, setContent] = useState('');
   const [isEditing, setIsEditing] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { selectedText, setSelectedText, currentProposal, setCurrentProposal } = useAppStore();
   const editorRef = useRef<any>(null);
   const diffEditorRef = useRef<any>(null);
 
   useEffect(() => {
-    // Mock loading file content
-    const loadedContent = MOCK_FILE_CONTENT[filePath] || '';
-    setContent(loadedContent);
+    const loadFile = async () => {
+      setLoading(true);
+      try {
+        const loadedContent = await readFile(filePath);
+        setContent(loadedContent);
+      } catch (error) {
+        console.error("Failed to read file:", error);
+        notifications.show({
+          title: '读取失败',
+          message: `无法读取文件: ${error}`,
+          color: 'red'
+        });
+        setContent('');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFile();
+
     // Determine default mode based on extension
     if (filePath.endsWith('.md')) {
       setIsEditing(false);
@@ -51,17 +70,29 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
     diffEditorRef.current = editor;
   };
 
-  const handleAcceptProposal = () => {
+  const handleAcceptProposal = async () => {
     if (currentProposal && currentProposal.filePath === filePath) {
-      MOCK_FILE_CONTENT[filePath] = currentProposal.newContent;
-      setContent(currentProposal.newContent);
-      setCurrentProposal(null);
-      notifications.show({
-        title: '已采纳',
-        message: 'AI 的修改已应用到当前文件',
-        color: 'green',
-        icon: <IconCheck size={18} />
-      });
+      try {
+        setSaving(true);
+        await writeFile(filePath, currentProposal.newContent);
+        setContent(currentProposal.newContent);
+        setCurrentProposal(null);
+        notifications.show({
+          title: '已采纳',
+          message: 'AI 的修改已应用到当前文件',
+          color: 'green',
+          icon: <IconCheck size={18} />
+        });
+      } catch (error) {
+        console.error("Failed to write file:", error);
+        notifications.show({
+          title: '采纳失败',
+          message: `无法写入文件: ${error}`,
+          color: 'red'
+        });
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -77,18 +108,29 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
     }
   };
 
-  const handleSave = () => {
-    // Mock save logic
+  const handleSave = async () => {
     if (editorRef.current) {
       const value = editorRef.current.getValue();
-      MOCK_FILE_CONTENT[filePath] = value;
-      setContent(value);
-      notifications.show({
-        title: '已保存',
-        message: `文件 ${filePath} 保存成功`,
-        color: 'green',
-        icon: <IconDeviceFloppy size={18} />
-      });
+      try {
+        setSaving(true);
+        await writeFile(filePath, value);
+        setContent(value);
+        notifications.show({
+          title: '已保存',
+          message: `文件 ${filePath} 保存成功`,
+          color: 'green',
+          icon: <IconDeviceFloppy size={18} />
+        });
+      } catch (error) {
+        console.error("Failed to save file:", error);
+        notifications.show({
+          title: '保存失败',
+          message: `无法保存文件: ${error}`,
+          color: 'red'
+        });
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -154,7 +196,8 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
             size="compact-sm" 
             leftSection={<IconDeviceFloppy size={16} />} 
             onClick={handleSave}
-            disabled={!isEditing}
+            disabled={!isEditing || saving}
+            loading={saving}
           >
             保存
           </Button>
@@ -163,7 +206,11 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
 
       {/* Editor Area */}
       <Box style={{ flex: 1, position: 'relative', overflow: 'auto' }}>
-        {currentProposal && currentProposal.filePath === filePath ? (
+        {loading ? (
+          <Center h="100%">
+            <Loader color="blue" />
+          </Center>
+        ) : currentProposal && currentProposal.filePath === filePath ? (
           <>
             <Box style={{ position: 'absolute', top: 10, right: 30, zIndex: 10 }}>
               <Group gap="sm">
