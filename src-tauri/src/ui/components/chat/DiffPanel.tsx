@@ -4,6 +4,7 @@ import { IconCheck, IconX, IconFileCode } from '@tabler/icons-react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 import { useAppStore } from '../../store';
 import { notifications } from '@mantine/notifications';
+import { updateWikiPage, writeFile } from '../../api/tauri';
 
 export const DiffPanel: React.FC = () => {
   const { currentProposal, setCurrentProposal } = useAppStore();
@@ -12,15 +13,37 @@ export const DiffPanel: React.FC = () => {
     return null;
   }
 
-  const handleAccept = () => {
-    // Mock the backend trigger to move snapshot into actual file
-    notifications.show({
-      title: '提案已采纳',
-      message: `修改已应用到 ${currentProposal.filePath}`,
-      color: 'green',
-      icon: <IconCheck size={18} />
-    });
-    setCurrentProposal(null);
+  const handleAccept = async () => {
+    try {
+      if (currentProposal.type === 'wiki') {
+        const { wikiRoot, filePath, wikiMeta, newContent } = currentProposal;
+        
+        // filePath might be "my-wiki/new-page.md", we only need the relative part for the updateWikiPage API if it's already in the root path.
+        // Actually, the API expects wikiRoot as the base path and filePath as the relative path.
+        // If wikiRoot is the full path to my-wiki, then filePath should just be the filename or subpath.
+        const relativePath = filePath.startsWith('my-wiki/') ? filePath.substring(8) : filePath;
+        
+        await updateWikiPage(wikiRoot || '', relativePath, wikiMeta || {}, newContent);
+      } else {
+        await writeFile(currentProposal.filePath, currentProposal.newContent);
+      }
+
+      notifications.show({
+        title: '提案已采纳',
+        message: `修改已应用到 ${currentProposal.filePath}`,
+        color: 'green',
+        icon: <IconCheck size={18} />
+      });
+      setCurrentProposal(null);
+    } catch (error) {
+      console.error("Failed to accept proposal:", error);
+      notifications.show({
+        title: '采纳失败',
+        message: `无法保存修改: ${error}`,
+        color: 'red',
+        icon: <IconX size={18} />
+      });
+    }
   };
 
   const handleReject = () => {

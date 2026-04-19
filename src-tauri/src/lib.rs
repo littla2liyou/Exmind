@@ -7,7 +7,7 @@ use tracing_appender::rolling::{RollingFileAppender, Rotation};
 use tauri_plugin_dialog::DialogExt;
 
 // Re-export from wikimind-commands crate
-pub use wikimind_commands::{chat, file_ops, update_wiki, ai_proxy, wiki_ops};
+pub use wikimind_commands::{chat, file_ops, ai_proxy, wiki_ops};
 
 fn get_log_dir() -> PathBuf {
     let base = if cfg!(windows) {
@@ -68,7 +68,6 @@ pub fn run() {
             wikimind_commands::file_ops::create_dir,
             wikimind_commands::file_ops::delete_path,
             wikimind_commands::chat::chat,
-            wikimind_commands::update_wiki::update_wiki,
             wikimind_commands::ai_proxy::list_skills,
             wikimind_commands::ai_proxy::execute_skill,
             wikimind_commands::wiki_ops::get_wiki_page,
