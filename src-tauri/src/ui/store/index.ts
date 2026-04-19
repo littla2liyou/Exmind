@@ -11,6 +11,9 @@ export interface DiffProposal {
   filePath: string;
   oldContent: string;
   newContent: string;
+  type?: 'file' | 'wiki';
+  wikiMeta?: any;
+  wikiRoot?: string;
 }
 
 interface AppState {
