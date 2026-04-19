@@ -19,17 +19,17 @@ impl Skill for OrganizeToWikiSkill {
 
     async fn execute(&self, context: SkillContext) -> anyhow::Result<SkillOutput> {
         // 构建提示词
-        let mut prompt = String::from("You are a wiki author. Write a clear, well-structured markdown page.\n");
-        prompt.push_str("Draw facts only from the provided source material.\n");
-        prompt.push_str("Include a ## Sources section at the end listing the source document.\n");
-        prompt.push_str("Suggest [[wikilinks]] to related concepts where appropriate.\n\n");
+        let mut _prompt = String::from("You are a wiki author. Write a clear, well-structured markdown page.\n");
+        _prompt.push_str("Draw facts only from the provided source material.\n");
+        _prompt.push_str("Include a ## Sources section at the end listing the source document.\n");
+        _prompt.push_str("Suggest [[wikilinks]] to related concepts where appropriate.\n\n");
         
         if let Some(inst) = &context.instruction {
-            prompt.push_str(&format!("User Instruction: {}\n\n", inst));
+            _prompt.push_str(&format!("User Instruction: {}\n\n", inst));
         }
         
-        prompt.push_str("--- SOURCE MATERIAL ---\n\n");
-        prompt.push_str(&context.original_content);
+        _prompt.push_str("--- SOURCE MATERIAL ---\n\n");
+        _prompt.push_str(&context.original_content);
 
         // TODO: 调用真实的 LLMProvider
         // 这里模拟 LLM 返回的提议内容
@@ -66,13 +66,13 @@ impl Skill for AutoAgentSkill {
 
     async fn execute(&self, context: SkillContext) -> anyhow::Result<SkillOutput> {
         // 构建提示词
-        let mut prompt = String::from("You are the knowledge compiler for an LLM wiki.\n");
-        prompt.push_str("Your job is to read a new raw source, extract distinct concepts, and make the wiki more coherent and better linked.\n");
-        prompt.push_str("Assign an evidence_type to each claim: EXTRACTED | INFERRED.\n");
-        prompt.push_str("Use [[wikilink]] syntax for all cross-references.\n\n");
+        let mut _prompt = String::from("You are the knowledge compiler for an LLM wiki.\n");
+        _prompt.push_str("Your job is to read a new raw source, extract distinct concepts, and make the wiki more coherent and better linked.\n");
+        _prompt.push_str("Assign an evidence_type to each claim: EXTRACTED | INFERRED.\n");
+        _prompt.push_str("Use [[wikilink]] syntax for all cross-references.\n\n");
         
-        prompt.push_str("--- SOURCE MATERIAL ---\n\n");
-        prompt.push_str(&context.original_content);
+        _prompt.push_str("--- SOURCE MATERIAL ---\n\n");
+        _prompt.push_str(&context.original_content);
 
         // TODO: 调用真实的 LLMProvider
         let proposed_content = format!("# 自动整理结果\n\n{}", context.original_content);
