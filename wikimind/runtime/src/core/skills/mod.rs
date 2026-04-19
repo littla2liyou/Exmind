@@ -2,9 +2,11 @@ pub mod builtin;
 pub mod registry;
 
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// 技能执行上下文
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SkillContext {
     pub instruction: Option<String>,
     pub original_content: String,
@@ -13,6 +15,7 @@ pub struct SkillContext {
 }
 
 /// 标准化技能输出
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SkillOutput {
     pub proposed_content: String,
     pub diff: Option<String>,
