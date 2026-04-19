@@ -87,6 +87,24 @@ fn get_version_dir(wiki_root: &Path, file_path: &Path) -> Result<PathBuf> {
     Ok(version_dir)
 }
 
+fn get_unique_version_path(version_dir: &Path) -> PathBuf {
+    let timestamp = Utc::now().format("%Y-%m-%dT%H-%M-%S%.9fZ").to_string();
+    let mut version_path = version_dir.join(format!("{}.md", timestamp));
+
+    if !version_path.exists() {
+        return version_path;
+    }
+
+    let mut counter = 1;
+    loop {
+        version_path = version_dir.join(format!("{}-{}.md", timestamp, counter));
+        if !version_path.exists() {
+            return version_path;
+        }
+        counter += 1;
+    }
+}
+
 /// Creates a timestamped version snapshot of the current file before updating.
 pub fn save_version(wiki_root: &Path, file_path: &Path) -> Result<()> {
     if !file_path.exists() {
@@ -94,8 +112,7 @@ pub fn save_version(wiki_root: &Path, file_path: &Path) -> Result<()> {
     }
     
     let version_dir = get_version_dir(wiki_root, file_path)?;
-    let timestamp = Utc::now().format("%Y-%m-%dT%H-%M-%SZ").to_string();
-    let version_path = version_dir.join(format!("{}.md", timestamp));
+    let version_path = get_unique_version_path(&version_dir);
     
     fs::copy(file_path, &version_path)?;
     
