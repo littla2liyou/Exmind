@@ -1,4 +1,4 @@
-use super::{Skill, SkillContext, SkillOutput};
+use super::Skill;
 use std::collections::HashMap;
 
 pub struct SkillRegistry {
