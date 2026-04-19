@@ -2,8 +2,10 @@ use anyhow::{Context, Result};
 use chrono::Utc;
 use gray_matter::{engine::YAML, Matter};
 use serde::{Deserialize, Serialize};
+use std::collections::hash_map::DefaultHasher;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::hash::{Hash, Hasher};
+use std::path::{Component, Path, PathBuf};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WikiPageMeta {
@@ -54,17 +56,34 @@ pub fn assemble_page(meta: &WikiPageMeta, content: &str) -> Result<String> {
     Ok(format!("---\n{}---\n{}", yaml, content))
 }
 
-fn get_version_dir(wiki_root: &Path, file_path: &Path) -> Result<PathBuf> {
+fn version_dir_key(wiki_root: &Path, file_path: &Path) -> String {
     let relative_path = file_path.strip_prefix(wiki_root).unwrap_or(file_path);
-    // Sanitize path to be used as a directory name (e.g. replacing slashes)
-    let safe_name = relative_path.to_string_lossy().replace("/", "_").replace("\\", "_");
-    
+    let normalized = relative_path
+        .components()
+        .filter_map(|component| match component {
+            Component::CurDir => None,
+            Component::ParentDir => Some("..".to_string()),
+            Component::Normal(part) => Some(part.to_string_lossy().into_owned()),
+            Component::RootDir => Some("/".to_string()),
+            Component::Prefix(prefix) => Some(prefix.as_os_str().to_string_lossy().into_owned()),
+        })
+        .collect::<Vec<_>>()
+        .join("/");
+
+    let mut hasher = DefaultHasher::new();
+    normalized.hash(&mut hasher);
+    format!("{:016x}", hasher.finish())
+}
+
+fn get_version_dir(wiki_root: &Path, file_path: &Path) -> Result<PathBuf> {
+    let version_key = version_dir_key(wiki_root, file_path);
+
     let wiki_type = wiki_root.file_name().unwrap_or_default().to_string_lossy();
     let dot_dir = format!(".exmind-{}", wiki_type);
-    
-    let version_dir = wiki_root.join(&dot_dir).join("versions").join(safe_name);
+
+    let version_dir = wiki_root.join(&dot_dir).join("versions").join(version_key);
     fs::create_dir_all(&version_dir)?;
-    
+
     Ok(version_dir)
 }
 
