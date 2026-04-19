@@ -8,8 +8,8 @@ pub fn init_workspace<P: AsRef<Path>>(root_path: P) -> Result<()> {
 
     let dirs_to_create = vec![
         root.join("workspace"),
-        root.join("my-wiki").join(".exmind-mywiki").join("versions"),
-        root.join("agent-wiki").join(".exmind-agentwiki").join("versions"),
+        root.join("my-wiki").join(".exmind-my-wiki").join("versions"),
+        root.join("agent-wiki").join(".exmind-agent-wiki").join("versions"),
         root.join(".exmind"),
     ];
 
