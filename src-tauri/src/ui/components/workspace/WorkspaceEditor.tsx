@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useAppStore } from '../../store';
 import { notifications } from '@mantine/notifications';
-import { readFile, writeFile, updateWiki } from '../../api/tauri';
+import { readFile, writeFile, executeSkill } from '../../api/tauri';
 
 interface WorkspaceEditorProps {
   filePath: string;
@@ -140,12 +140,12 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
       notifications.show({ title: '提示', message: '请先在编辑器中选中文本', color: 'yellow' });
       return;
     }
-    
+
     setIsOrganizing(true);
     notifications.show({
       id: 'organize-wiki',
       title: 'AI 处理中',
-      message: '正在生成代码修改提案...',
+      message: '正在生成 Wiki 页面...',
       color: 'grape',
       icon: <IconWand size={18} />,
       loading: true,
@@ -153,16 +153,30 @@ export const WorkspaceEditor: React.FC<WorkspaceEditorProps> = ({ filePath }) =>
     });
 
     try {
-      const response = await updateWiki([selectedText], '技术风格', workspaceDir, apiKey, rootDir);
+      const response = await executeSkill({
+        skill_id: 'organize_to_wiki',
+        original_content: selectedText,
+        source_path: filePath,
+        target_wiki: 'my-wiki'
+      });
+
+      const newFileName = response.meta?.uid ? `${response.meta.uid}.md` : `new-page-${Date.now()}.md`;
+      const wikiRootPath = workspaceDir || rootDir || '';
       
-      // We no longer append to the current file.
-      // updateWiki has saved the files to agent-wiki.
-      // We just notify the user it's done.
+      setCurrentProposal({
+        id: Date.now().toString(),
+        filePath: `my-wiki/${newFileName}`,
+        oldContent: '',
+        newContent: response.proposed_content,
+        type: 'wiki',
+        wikiMeta: response.meta,
+        wikiRoot: `${wikiRootPath}/my-wiki`
+      });
 
       notifications.update({
         id: 'organize-wiki',
-        title: '处理完成',
-        message: 'AI 提案已生成并保存到 Agent Wiki，请在左侧 Wiki 侧边栏查看。',
+        title: '提案已生成',
+        message: '请在 Diff 视图中审阅并确认',
         color: 'green',
         icon: <IconCheck size={18} />,
         loading: false,

@@ -74,24 +74,52 @@ export async function chat(messages: ChatMessage[], workspacePath?: string | nul
   });
 }
 
-export interface WikiSection {
-  title: string;
+
+
+export interface SkillInfo {
+  id: string;
+  name: string;
+}
+
+export interface ExecuteSkillPayload {
+  skill_id: string;
+  original_content: string;
+  instruction?: string | null;
+  source_path?: string | null;
+  target_wiki?: string | null;
+}
+
+export interface SkillOutput {
+  proposed_content: string;
+  diff?: string | null;
+  title_suggestion?: string | null;
+  meta?: any | null;
+}
+
+export interface WikiPageMeta {
+  uid?: string | null;
+  title?: string | null;
+  created_by?: string | null;
+  updated_at?: string | null;
+}
+
+export interface WikiPageResponse {
+  meta: WikiPageMeta;
   content: string;
 }
 
-export interface WikiOutline {
-  sections: WikiSection[];
+export async function listSkills(): Promise<SkillInfo[]> {
+  return await invoke<SkillInfo[]>('list_skills');
 }
 
-/**
- * 触发 Wiki 整理操作
- */
-export async function updateWiki(docs: string[], style?: string | null, workspacePath?: string | null, apiKey?: string | null, rootDir?: string | null): Promise<WikiOutline> {
-  return await invoke<WikiOutline>('update_wiki', {
-    docs,
-    style: style || null,
-    workspacePath: workspacePath || null,
-    apiKey: apiKey || null,
-    rootDir: rootDir || null
-  });
+export async function executeSkill(payload: ExecuteSkillPayload): Promise<SkillOutput> {
+  return await invoke<SkillOutput>('execute_skill', { payload });
+}
+
+export async function getWikiPage(wikiRoot: string, filePath: string): Promise<WikiPageResponse> {
+  return await invoke<WikiPageResponse>('get_wiki_page', { wikiRoot, filePath });
+}
+
+export async function updateWikiPage(wikiRoot: string, filePath: string, meta: WikiPageMeta, content: string): Promise<void> {
+  return await invoke<void>('update_wiki_page', { wikiRoot, filePath, meta, content });
 }
