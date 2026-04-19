@@ -1,7 +1,6 @@
 use std::path::PathBuf;
-use tauri::AppHandle;
-use wikimind_runtime::core::wiki::{self, WikiPageMeta, WikiPage};
-use serde::{Deserialize, Serialize};
+use wikimind_runtime::core::wiki::{self, WikiPageMeta};
+use serde::Serialize;
 
 #[derive(Serialize)]
 pub struct WikiPageResponse {
